@@ -148,10 +148,6 @@
 
 ;;; Coding Systems
 
-(defun valid-external-format-p (external-format)
-  (member external-format *external-format-to-coding-system*
-          :test #'equal :key #'car))
-
 (defvar *external-format-to-coding-system*
   '(((:latin-1 :eol-style :lf) 
      "latin-1-unix" "iso-latin-1-unix" "iso-8859-1-unix")
@@ -162,6 +158,10 @@
     ((:euc-jp :eol-style :lf) "euc-jp-unix")
     ;;((:ascii) "us-ascii")
     ((:ascii :eol-style :lf) "us-ascii-unix")))
+
+(defun valid-external-format-p (external-format)
+  (member external-format *external-format-to-coding-system*
+          :test #'equal :key #'car))
 
 (defimplementation find-external-format (coding-system)
   (car (rassoc-if (lambda (x) (member coding-system x :test #'equal))
@@ -311,20 +311,18 @@ Return NIL if the symbol is unbound."
 
 ;;; Debugging
 
-(defclass sly-env (env:environment) 
+(defclass sly-env (env:environment)
   ((debugger-hook :initarg :debugger-hoook)))
 
-(defun sly-env (hook io-bindings) 
-  (make-instance 'sly-env :name "SLY Environment" 
+(defun sly-env (hook io-bindings)
+  (make-instance 'sly-env :name "SLY Environment"
                  :io-bindings io-bindings
                  :debugger-hoook hook))
 
-(defmethod env-internals:environment-display-notifier 
+(defmethod env-internals:environment-display-notifier
     ((env sly-env) &key restarts condition)
-  (declare (ignore restarts condition))
-  (funcall (slynk-sym :slynk-debugger-hook) condition *debugger-hook*)
-  ;;  nil
-  )
+  (declare (ignore restarts))
+  (funcall (slynk-sym :slynk-debugger-hook) condition *debugger-hook*))
 
 (defmethod env-internals:environment-display-debugger ((env sly-env))
   *debug-io*)
